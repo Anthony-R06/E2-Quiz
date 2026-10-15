@@ -7,32 +7,55 @@ const readout = document.querySelector<HTMLParagraphElement>(
 )!;
 let crew = 2;
 
+interface ShiftReport {
+  production: number;
+  consumption: number;
+  balance: number;
+  crew: number;
+}
+
+function reportCalculations(crew: number) {
+  const reportValues: ShiftReport = {
+    production: crew * 3,
+    consumption: 6,
+    balance: crew * 3 - 6,
+    crew: crew,
+  };
+  return reportValues;
+}
+
 function update() {
-  const production = crew * 3;
-  const consumption = 6;
-  const balance = production - consumption;
+  const reportValues = reportCalculations(crew);
+  canvasRender(reportValues);
+  readoutRender(reportValues);
+}
+
+function canvasRender(reportValues: ShiftReport) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < 6; i++) {
-    ctx.fillStyle = i < crew ? "#27766b" : "#c9d2c9";
+    ctx.fillStyle = i < reportValues.crew ? "#27766b" : "#c9d2c9";
     ctx.fillRect(18 + i * 45, 16, 36, 36);
-    ctx.fillStyle = i < crew ? "#ffffff" : "#233e43";
+    ctx.fillStyle = i < reportValues.crew ? "#ffffff" : "#233e43";
     ctx.font = "16px system-ui";
     ctx.fillText(String(i + 1), 31 + i * 45, 40);
   }
   ctx.fillStyle = "#233e43";
   ctx.font = "14px system-ui";
-  ctx.fillText(`Producers: ${crew} / 6`, 18, 76);
-  ctx.fillText(`Production: ${production}`, 18, 102);
+  ctx.fillText(`Producers: ${reportValues.crew} / 6`, 18, 76);
+  ctx.fillText(`Production: ${reportValues.production}`, 18, 102);
   ctx.fillStyle = "#27766b";
-  ctx.fillRect(18, 110, production * 14, 20);
+  ctx.fillRect(18, 110, reportValues.production * 14, 20);
   ctx.fillStyle = "#233e43";
-  ctx.fillText(`Consumption: ${consumption}`, 18, 154);
+  ctx.fillText(`Consumption: ${reportValues.consumption}`, 18, 154);
   ctx.fillStyle = "#a44d23";
-  ctx.fillRect(18, 162, consumption * 14, 20);
+  ctx.fillRect(18, 162, reportValues.consumption * 14, 20);
+}
+
+function readoutRender(reportValues: ShiftReport) {
   readout.textContent =
-    `Assigned: ${crew}/6 · Production: ${production} · Consumption: ${consumption} · Balance: ${
-      balance > 0 ? "+" : ""
-    }${balance}`;
+    `Assigned: ${reportValues.crew}/6 · Production: ${reportValues.production} · Consumption: ${reportValues.consumption} · Balance: ${
+      reportValues.balance > 0 ? "+" : ""
+    }${reportValues.balance}`;
 }
 
 document.querySelector<HTMLButtonElement>("#allocation-less")!.onclick = () => {

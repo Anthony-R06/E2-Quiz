@@ -3,6 +3,10 @@ export {};
 const canvas = document.querySelector<HTMLCanvasElement>("#rover-canvas")!;
 const ctx = canvas.getContext("2d")!;
 const readout = document.querySelector<HTMLParagraphElement>("#rover-readout")!;
+const pendingList = document.querySelector<HTMLOListElement>("#rover-pending")!;
+const queueStatus = document.querySelector<HTMLParagraphElement>(
+  "#rover-queue-status",
+)!;
 
 interface Direction {
   name: string;
@@ -41,20 +45,41 @@ let direction = 0;
 
 interface Command {
   execute(): void;
+  label: string;
 }
 
 class RightCommand implements Command {
+  label = "right";
   execute(): void {
     direction = (direction + 1) % 4;
   }
 }
 
 class ForwardCommand implements Command {
+  label = "forward";
   execute(): void {
     const sumX = x + Directions[direction].xAmount;
     x = Math.max(0, Math.min(4, sumX));
     const sumY = y + Directions[direction].yAmount;
     y = Math.max(0, Math.min(4, sumY));
+  }
+}
+
+const commands: Command[] = [];
+
+function updateQueue() {
+  pendingList.replaceChildren();
+
+  for (const command of commands) {
+    const item = document.createElement("li");
+    item.textContent = command.label;
+    pendingList.appendChild(item);
+  }
+
+  if (commands.length == 0) {
+    queueStatus.textContent = "Empty";
+  } else {
+    queueStatus.textContent = `${commands.length} command(s) queued`;
   }
 }
 
@@ -84,18 +109,40 @@ function drawRover() {
 
 document.querySelector<HTMLButtonElement>("#rover-forward")!.onclick = () => {
   const forwardCommand = new ForwardCommand();
-  forwardCommand.execute();
-  drawRover();
+  commands.push(forwardCommand);
+  updateQueue();
 };
+
 document.querySelector<HTMLButtonElement>("#rover-right")!.onclick = () => {
   const rightCommand = new RightCommand();
-  rightCommand.execute();
-  drawRover();
+  commands.push(rightCommand);
+  updateQueue();
 };
+
+document.querySelector<HTMLButtonElement>("#rover-run")!.onclick = () => {
+  while (commands.length > 0) {
+    const command = commands.shift();
+
+    if (command) {
+      command.execute();
+      drawRover();
+      updateQueue();
+    }
+  }
+};
+
+document.querySelector<HTMLButtonElement>("#rover-clear")!.onclick = () => {
+  commands.length = 0;
+  updateQueue();
+};
+
 document.querySelector<HTMLButtonElement>("#rover-reset")!.onclick = () => {
   x = 2;
   y = 2;
   direction = 0;
+  commands.length = 0;
   drawRover();
+  updateQueue();
 };
 drawRover();
+updateQueue();

@@ -83,7 +83,7 @@ document.querySelector<HTMLButtonElement>("#allocation-more")!.onclick = () => {
 };
 document.querySelector<HTMLButtonElement>("#allocation-reset")!.onclick =
   () => {
-    crew = 2;
+    crew = 2; //need to put design choice in commit body
     update();
   };
 update();

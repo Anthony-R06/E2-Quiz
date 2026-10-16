@@ -3,7 +3,38 @@ export {};
 const canvas = document.querySelector<HTMLCanvasElement>("#rover-canvas")!;
 const ctx = canvas.getContext("2d")!;
 const readout = document.querySelector<HTMLParagraphElement>("#rover-readout")!;
-const headings = ["North", "East", "South", "West"];
+
+interface Direction {
+  name: string;
+  xAmount: number;
+  yAmount: number;
+}
+
+const North: Direction = {
+  name: "North",
+  xAmount: 0,
+  yAmount: -1,
+};
+
+const East: Direction = {
+  name: "East",
+  xAmount: 1,
+  yAmount: 0,
+};
+
+const South: Direction = {
+  name: "South",
+  xAmount: 0,
+  yAmount: 1,
+};
+
+const West: Direction = {
+  name: "West",
+  xAmount: -1,
+  yAmount: 0,
+};
+
+const Directions = [North, East, South, West];
 let x = 2;
 let y = 2;
 let direction = 0;
@@ -20,10 +51,10 @@ class RightCommand implements Command {
 
 class ForwardCommand implements Command {
   execute(): void {
-    if (direction === 0) y = Math.max(0, y - 1);
-    if (direction === 1) x = Math.min(4, x + 1);
-    if (direction === 2) y = Math.min(4, y + 1);
-    if (direction === 3) x = Math.max(0, x - 1);
+    const sumX = x + Directions[direction].xAmount;
+    x = Math.max(0, Math.min(4, sumX));
+    const sumY = y + Directions[direction].yAmount;
+    y = Math.max(0, Math.min(4, sumY));
   }
 }
 
@@ -47,7 +78,7 @@ function drawRover() {
   ctx.fill();
   ctx.restore();
   readout.textContent = `Position: (${x}, ${y}) · Facing: ${
-    headings[direction]
+    Directions[direction].name
   }`;
 }
 

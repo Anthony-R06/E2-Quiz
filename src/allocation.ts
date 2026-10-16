@@ -5,7 +5,7 @@ const ctx = canvas.getContext("2d")!;
 const readout = document.querySelector<HTMLParagraphElement>(
   "#allocation-readout",
 )!;
-let crew = 2;
+let crew = 0;
 
 interface ShiftReport {
   production: number;

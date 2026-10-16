@@ -14,6 +14,12 @@ interface ShiftReport {
   crew: number;
 }
 
+interface displayRecords {
+  label: string;
+  value: number;
+  color: string;
+}
+
 function reportCalculations(crew: number) {
   const reportValues: ShiftReport = {
     production: crew * 3,
@@ -39,16 +45,25 @@ function canvasRender(reportValues: ShiftReport) {
     ctx.font = "16px system-ui";
     ctx.fillText(String(i + 1), 31 + i * 45, 40);
   }
+  const listOfRecords: displayRecords[] = [
+    { label: "Production", value: reportValues.production, color: "#27766b" },
+    { label: "Consumption", value: reportValues.consumption, color: "#a44d23" },
+  ];
   ctx.fillStyle = "#233e43";
   ctx.font = "14px system-ui";
   ctx.fillText(`Producers: ${reportValues.crew} / 6`, 18, 76);
-  ctx.fillText(`Production: ${reportValues.production}`, 18, 102);
-  ctx.fillStyle = "#27766b";
-  ctx.fillRect(18, 110, reportValues.production * 14, 20);
-  ctx.fillStyle = "#233e43";
-  ctx.fillText(`Consumption: ${reportValues.consumption}`, 18, 154);
-  ctx.fillStyle = "#a44d23";
-  ctx.fillRect(18, 162, reportValues.consumption * 14, 20);
+
+  for (let i = 0; i < listOfRecords.length; i++) {
+    const y = 102 + i * 52;
+    ctx.fillText(
+      `${listOfRecords[i].label}: ${listOfRecords[i].value}`,
+      18,
+      y,
+    );
+    ctx.fillStyle = listOfRecords[i].color;
+    ctx.fillRect(18, y + 8, listOfRecords[i].value * 14, 20);
+    ctx.fillStyle = "#233e43";
+  }
 }
 
 function readoutRender(reportValues: ShiftReport) {

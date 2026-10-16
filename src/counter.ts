@@ -45,12 +45,6 @@ function drawMeter(snapshot: ShieldSnapshot) {
     `Shield charge: ${snapshot.curCharge} / ${snapshot.maxCharge}`;
 }
 
-function updateStats(snapshot: ShieldSnapshot) {
-  panelUpdates++;
-  diagnostic.textContent = `Inspector deliveries: ${panelUpdates}`;
-  renderStats(snapshot);
-}
-
 function renderStats(snapshot: ShieldSnapshot) {
   if (!panel) return;
   panel.textContent =
@@ -63,7 +57,14 @@ function setCount(next: number) {
   count = bounded;
   const snapshot = prepare(count, shieldMax);
   bus.dispatchEvent(new CustomEvent("chargeChanged", { detail: snapshot }));
-  if (panel) updateStats(snapshot);
+}
+
+function inspectorListener(event: Event) {
+  if (event instanceof CustomEvent) {
+    panelUpdates++;
+    diagnostic.textContent = `Inspector deliveries: ${panelUpdates}`;
+    renderStats(event.detail);
+  }
 }
 
 bus.addEventListener("chargeChanged", (event) => {
@@ -87,8 +88,10 @@ document.querySelector<HTMLButtonElement>("#counter-open")!.onclick = () => {
   host.append(panel);
   const snapshot = prepare(count, shieldMax);
   renderStats(snapshot);
+  bus.addEventListener("chargeChanged", inspectorListener);
 };
 document.querySelector<HTMLButtonElement>("#counter-close")!.onclick = () => {
+  bus.removeEventListener("chargeChanged", inspectorListener);
   if (!panel) return;
   panel.remove();
   panel = null;

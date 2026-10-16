@@ -9,10 +9,13 @@ const host = document.querySelector<HTMLDivElement>("#counter-panel-host")!;
 const diagnostic = document.querySelector<HTMLParagraphElement>(
   "#counter-diagnostic",
 )!;
+
 let count = 0;
 let panel: HTMLParagraphElement | null = null;
 let panelUpdates = 0;
 const shieldMax = 10;
+
+const bus = new EventTarget();
 
 interface ShieldSnapshot {
   curCharge: number;
@@ -37,8 +40,9 @@ function drawMeter(snapshot: ShieldSnapshot) {
   }
   ctx.fillStyle = "#233e43";
   ctx.font = "16px system-ui";
-  ctx.fillText(`${snapshot.curCharge} / 10 shield`, 12, 100);
-  readout.textContent = `Shield charge: ${snapshot.curCharge} / 10`;
+  ctx.fillText(`${snapshot.curCharge} / ${snapshot.maxCharge} shield`, 12, 100);
+  readout.textContent =
+    `Shield charge: ${snapshot.curCharge} / ${snapshot.maxCharge}`;
 }
 
 function updateStats(snapshot: ShieldSnapshot) {
@@ -58,9 +62,15 @@ function setCount(next: number) {
   if (bounded === count) return;
   count = bounded;
   const snapshot = prepare(count, shieldMax);
-  drawMeter(snapshot);
+  bus.dispatchEvent(new CustomEvent("chargeChanged", { detail: snapshot }));
   if (panel) updateStats(snapshot);
 }
+
+bus.addEventListener("chargeChanged", (event) => {
+  if (event instanceof CustomEvent) {
+    drawMeter(event.detail);
+  }
+});
 
 document.querySelector<HTMLButtonElement>("#counter-less")!.onclick = () => {
   setCount(count - 1);
